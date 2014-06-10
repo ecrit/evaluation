@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GitHub Searcher
+Bundle-SymbolicName: at.ecrit.github.search
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: ecrit.at
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: at.ecrit.github.evaluation
+Bundle-ClassPath: libs/jsoup-1.7.3.jar,
+ .
