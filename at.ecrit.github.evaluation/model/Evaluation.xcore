@@ -1,0 +1,37 @@
+package at.ecrit.evaluation
+
+import java.util.Date
+import java.io.File
+
+class Evaluation {
+	contains ApplicationModelReference[] appModelReferences
+	contains Localization[] localStorageLoc
+	Date evaluationDate
+	File content
+}
+
+class ApplicationModelReference {
+	String url
+	String rawUrl
+	double fileSize
+	String gitBaseLocation
+	String gitRepository
+	String description		
+	String readmeUrl
+	File readMe
+	contains ContextInfo context
+}
+
+class ContextInfo{
+	int nrCommands
+	int nrWindowElements
+	boolean fragment
+}
+
+class Localization{
+	refers ApplicationModelReference amr
+	String localPath
+}
+
+type File wraps File
+type Date wraps Date

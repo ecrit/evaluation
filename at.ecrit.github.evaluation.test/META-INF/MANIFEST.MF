@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GitHub Evaluation Tests
+Bundle-SymbolicName: at.ecrit.github.evaluation.test
+Bundle-Version: 0.0.1.qualifier
+Bundle-Vendor: ecrit.at
+Fragment-Host: at.ecrit.github.evaluation
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.emf.ecore,
+ org.eclipse.e4.ui.workbench,
+ org.eclipse.emf.ecore.xmi;bundle-version="2.10.0",
+ org.eclipse.swt,
+ org.junit
