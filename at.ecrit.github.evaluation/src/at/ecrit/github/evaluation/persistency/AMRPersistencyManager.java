@@ -2,6 +2,7 @@ package at.ecrit.github.evaluation.persistency;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Map;
 
@@ -35,7 +36,8 @@ public class AMRPersistencyManager {
 		Map<String, Object> map = register.getExtensionToFactoryMap();
 		map.put("xmi", new XMIResourceFactoryImpl());
 		
-		File xmiFile = new File(XMI_FILE_PATH);
+		URL url = AMRPersistencyManager.class.getResource("/model/evaluation.xmi");
+		File xmiFile = new File(url.getPath());
 		
 		ResourceSet resourceSet = new ResourceSetImpl();
 		resource = resourceSet.getResource(URI.createURI(xmiFile.toURI().toString()), true);

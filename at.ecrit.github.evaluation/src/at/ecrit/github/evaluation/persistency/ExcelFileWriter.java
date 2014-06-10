@@ -1,168 +1,110 @@
 package at.ecrit.github.evaluation.persistency;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
-import jxl.CellView;
-import jxl.Workbook;
-import jxl.WorkbookSettings;
-import jxl.format.UnderlineStyle;
-import jxl.write.Label;
-import jxl.write.WritableCellFormat;
-import jxl.write.WritableFont;
-import jxl.write.WritableSheet;
-import jxl.write.WritableWorkbook;
-import jxl.write.WriteException;
-import jxl.write.biff.RowsExceededException;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+
 import at.ecrit.evaluation.ApplicationModelReference;
-import at.ecrit.evaluation.Localization;
 
 public class ExcelFileWriter {
-	private WritableCellFormat arialBoldUnderline;
-	private WritableCellFormat arial;
+	private CreationHelper createHelper;
 	
-	private WritableWorkbook workbook;
-	private WritableSheet sheet;
-	
-	private String inputFile;
-	
-	private HashMap<ApplicationModelReference, Integer> rowMap;
-	private List<ApplicationModelReference> ignored;
-	
-	public void setOutputFile(String inputFile){
-		this.inputFile = inputFile;
-	}
-	
-	public void write(List<ApplicationModelReference> amrList, List<Localization> localStorageLoc,
-		List<ApplicationModelReference> ignored) throws IOException, WriteException{
-		File file = new File(inputFile);
-		WorkbookSettings wbSettings = new WorkbookSettings();
+	public void write(List<ApplicationModelReference> amrList, File outputFile) throws IOException{
+		Workbook wb = new HSSFWorkbook();
+		createHelper = wb.getCreationHelper();
+		Sheet sheet = wb.createSheet("Content");
 		
-		rowMap = new HashMap<ApplicationModelReference, Integer>();
-		this.ignored = ignored;
+		Row row = sheet.createRow((short) 0);
+		createTableHeaders(row);
+		createTableContent(amrList, sheet);
 		
-		wbSettings.setLocale(new Locale("en", "EN"));
-		
-		workbook = Workbook.createWorkbook(file, wbSettings);
-		workbook.createSheet("Content", 0);
-		sheet = workbook.getSheet(0);
-		
-		createHeaders(getDefaultHeaders());
-		createContent(amrList, localStorageLoc);
+		// Write the output to a file
+		FileOutputStream fileOut = new FileOutputStream(outputFile);
+		wb.write(fileOut);
+		fileOut.close();
 		
 	}
 	
-	public void close() throws IOException, WriteException{
-		if (workbook != null) {
-			workbook.write();
-			workbook.close();
-		}
-	}
-	
-	private void createHeaders(List<String> headers) throws WriteException{
-		// Lets create a times font
-		WritableFont arial10pt = new WritableFont(WritableFont.ARIAL, 10);
-		// Define the cell format
-		arial = new WritableCellFormat(arial10pt);
-		// Lets automatically wrap the cells
-		arial.setWrap(true);
-		
-		// create create a bold font with unterlines
-		WritableFont arial10ptBoldUnderline =
-			new WritableFont(WritableFont.ARIAL, 10, WritableFont.BOLD, false,
-				UnderlineStyle.SINGLE);
-		arialBoldUnderline = new WritableCellFormat(arial10ptBoldUnderline);
-		// Lets automatically wrap the cells
-		arialBoldUnderline.setWrap(true);
-		
-		CellView cv = new CellView();
-		cv.setFormat(arial);
-		cv.setFormat(arialBoldUnderline);
-		cv.setAutosize(true);
-		
-		// Write the table headers
+	private void createTableHeaders(Row row){
+		List<String> headers = getDefaultHeaders();
 		for (int i = 0; i < headers.size(); i++) {
-			addCaption(i, 0, headers.get(i));
+			Cell cell = row.createCell(i);
+			cell.setCellValue(headers.get(i));
 		}
 	}
 	
-	private void createContent(List<ApplicationModelReference> amrList,
-		List<Localization> localStorageMap) throws WriteException, RowsExceededException{
-		Map<ApplicationModelReference, String> localStorageLoc =
-			loadLocalStorageMap(localStorageMap);
-		
-		// now a bit of text
+	private void createTableContent(List<ApplicationModelReference> amrList, Sheet sheet){
 		for (int i = 1; i <= amrList.size(); i++) {
 			ApplicationModelReference amr = amrList.get(i - 1);
-			rowMap.put(amr, i);
-			// Evaluated?
-			addLabel(0, i, toEvaluate(amr));
+			
+			Row row = sheet.createRow((short) i);
 			// Repository Name
-			addLabel(1, i, amr.getGitBaseLocation() + "/" + amr.getGitRepository());
+			createCell(row, 0, amr.getGitBaseLocation() + "/" + amr.getGitRepository());
 			// Path GitHub
-			addLabel(2, i, amr.getUrl());
-			// Path Local
-			addLabel(3, i, localStorageLoc.get(amr));
+			createHyperlinkCell(row, 1, amr.getUrl());
 			// FileSize
-			addLabel(4, i, String.format("%1$,.2f", amr.getFileSize()));
+			createCell(row, 2, String.format("%1$,.2f", amr.getFileSize()));
+			// description
+			createCell(row, 3, amr.getDescription());
+			// readme
+			createCell(row, 4, amr.getReadmeUrl());
 			// isFragment
-			addLabel(5, i, amr.getContext().isFragment() + "");
+			createCell(row, 5, amr.getContext().isFragment() + "");
+			// # parts
+			createCell(row, 6, amr.getContext().getNrParts() + "");
+			// # perspectives
+			createCell(row, 7, amr.getContext().getNrPerspectives() + "");
 			// # commands
-			addLabel(6, i, amr.getContext().getNrCommands() + "");
-			// # window element
-			addLabel(7, i, amr.getContext().getNrWindowElements() + "");
+			createCell(row, 8, amr.getContext().getNrCommands() + "");
+			// # direct menu items
+			createCell(row, 9, amr.getContext().getNrDirectMenus() + "");
+			// # handled menu items
+			createCell(row, 10, amr.getContext().getNrHandledMenus() + "");
+			// # mainMenu
+			createCell(row, 11, amr.getContext().isMainMenu() + "");
+			// # toolbar
+			createCell(row, 12, amr.getContext().isToolBar() + "");
 		}
 	}
 	
-	private Map<ApplicationModelReference, String> loadLocalStorageMap(
-		List<Localization> localStorageMap){
-		Map<ApplicationModelReference, String> localStorageLoc =
-			new HashMap<ApplicationModelReference, String>();
-		for (Localization loc : localStorageMap) {
-			localStorageLoc.put(loc.getAmr(), loc.getLocalPath());
-		}
-		return localStorageLoc;
+	private void createHyperlinkCell(Row row, int col, String url){
+		Cell cell = row.createCell(col);
+		cell.setCellValue(url);
+		Hyperlink link = createHelper.createHyperlink(Hyperlink.LINK_URL);
+		link.setAddress(url);
+		cell.setHyperlink(link);
 	}
 	
-	public String toEvaluate(ApplicationModelReference amr){
-		String evaluated = "true";
-		
-		if (ignored.contains(amr))
-			evaluated = "false";
-		
-		return evaluated;
-	}
-	
-	private void addCaption(int column, int row, String s) throws RowsExceededException,
-		WriteException{
-		Label label;
-		label = new Label(column, row, s, arialBoldUnderline);
-		sheet.addCell(label);
-	}
-	
-	private void addLabel(int column, int row, String s) throws WriteException,
-		RowsExceededException{
-		Label label;
-		label = new Label(column, row, s, arial);
-		sheet.addCell(label);
+	private void createCell(Row row, int col, String string){
+		Cell cell = row.createCell(col);
+		cell.setCellValue(string);
 	}
 	
 	private List<String> getDefaultHeaders(){
 		List<String> defaultHeaders = new ArrayList<String>();
-		defaultHeaders.add("Evaluated");
 		defaultHeaders.add("RepositoryName");
 		defaultHeaders.add("Path (GitHub)");
-		defaultHeaders.add("Path (Local)");
 		defaultHeaders.add("FileSize (KB)");
+		defaultHeaders.add("Description");
+		defaultHeaders.add("ReadMe");
 		defaultHeaders.add("IsFragment");
+		defaultHeaders.add("# Parts");
+		defaultHeaders.add("# Perspectives");
 		defaultHeaders.add("# Commands");
-		defaultHeaders.add("# Window Elements");
-		defaultHeaders.add("Other");
+		defaultHeaders.add("# DirectMenus");
+		defaultHeaders.add("# HandledMenus");
+		defaultHeaders.add("Has Main Menu");
+		defaultHeaders.add("Has Toolbar");
 		
 		return defaultHeaders;
 	}

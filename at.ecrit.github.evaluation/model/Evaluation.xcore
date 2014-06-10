@@ -5,7 +5,6 @@ import java.io.File
 
 class Evaluation {
 	contains ApplicationModelReference[] appModelReferences
-	contains Localization[] localStorageLoc
 	Date evaluationDate
 	File content
 }
@@ -17,20 +16,20 @@ class ApplicationModelReference {
 	String gitBaseLocation
 	String gitRepository
 	String description		
+	String readMe
 	String readmeUrl
-	File readMe
 	contains ContextInfo context
 }
 
 class ContextInfo{
+	int nrParts
+	int nrPerspectives
 	int nrCommands
-	int nrWindowElements
+	int nrDirectMenus
+	int nrHandledMenus
 	boolean fragment
-}
-
-class Localization{
-	refers ApplicationModelReference amr
-	String localPath
+	boolean mainMenu
+	boolean toolBar
 }
 
 type File wraps File

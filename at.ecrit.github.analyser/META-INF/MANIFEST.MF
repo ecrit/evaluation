@@ -6,8 +6,8 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: ecrit.at
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- at.ecrit.github.evaluation
+ at.ecrit.github.evaluation,
+ org.jsoup;bundle-version="1.7.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-ClassPath: libs/jsoup-1.7.3.jar,
- .,
+Bundle-ClassPath: .,
  libs/org.eclipse.egit.github.core-2.1.5.jar
