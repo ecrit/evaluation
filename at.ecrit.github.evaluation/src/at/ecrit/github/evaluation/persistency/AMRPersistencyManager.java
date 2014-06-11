@@ -2,6 +2,7 @@ package at.ecrit.github.evaluation.persistency;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Map;
@@ -18,11 +19,13 @@ import at.ecrit.evaluation.impl.EvaluationPackageImpl;
 
 public class AMRPersistencyManager {
 	private static Resource resource = null;
-	private static final String XMI_FILE_PATH = System.getProperty("user.dir") + File.separator
-		+ "model" + File.separator + "evaluation.xmi";
+	private static String xmiFilePath = "";
 	
-	public static Evaluation getEvaluations(){
+	public static Evaluation getEvaluations(String xmiPath){
 		if (resource == null) {
+			if (xmiPath != null && !xmiPath.isEmpty()) {
+				xmiFilePath = xmiPath;
+			}
 			loadResource();
 		}
 		return (Evaluation) resource.getContents().get(0);
@@ -36,11 +39,22 @@ public class AMRPersistencyManager {
 		Map<String, Object> map = register.getExtensionToFactoryMap();
 		map.put("xmi", new XMIResourceFactoryImpl());
 		
-		URL url = AMRPersistencyManager.class.getResource("/model/evaluation.xmi");
-		File xmiFile = new File(url.getPath());
-		
-		ResourceSet resourceSet = new ResourceSetImpl();
-		resource = resourceSet.getResource(URI.createURI(xmiFile.toURI().toString()), true);
+		try {
+			URL url;
+			if (xmiFilePath.isEmpty()) {
+				url = AMRPersistencyManager.class.getResource("/model/evaluation.xmi");
+			} else {
+				File xmiFile = new File(xmiFilePath);
+				url = xmiFile.toURI().toURL();
+			}
+			File xmiFile = new File(url.getPath());
+			
+			ResourceSet resourceSet = new ResourceSetImpl();
+			resource = resourceSet.getResource(URI.createURI(xmiFile.toURI().toString()), true);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void save(){

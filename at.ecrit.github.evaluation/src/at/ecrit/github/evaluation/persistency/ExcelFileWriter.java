@@ -57,7 +57,12 @@ public class ExcelFileWriter {
 			// description
 			createCell(row, 3, amr.getDescription());
 			// readme
-			createCell(row, 4, amr.getReadmeUrl());
+			String readMe = amr.getReadmeUrl();
+			if (readMe == null || readMe.isEmpty()) {
+				createCell(row, 4, "");
+			} else {
+				createHyperlinkCell(row, 4, readMe);
+			}
 			// isFragment
 			createCell(row, 5, amr.getContext().isFragment() + "");
 			// # parts
@@ -105,6 +110,8 @@ public class ExcelFileWriter {
 		defaultHeaders.add("# HandledMenus");
 		defaultHeaders.add("Has Main Menu");
 		defaultHeaders.add("Has Toolbar");
+		defaultHeaders.add("Category");
+		defaultHeaders.add("Relevant?");
 		
 		return defaultHeaders;
 	}

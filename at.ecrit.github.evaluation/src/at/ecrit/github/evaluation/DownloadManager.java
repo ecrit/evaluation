@@ -32,7 +32,7 @@ public class DownloadManager {
 	private static File contentFile;
 	
 	public DownloadManager(){
-		evaluation = AMRPersistencyManager.getEvaluations();
+		evaluation = AMRPersistencyManager.getEvaluations(null);
 		appModelRefs = evaluation.getAppModelReferences();
 	}
 	
