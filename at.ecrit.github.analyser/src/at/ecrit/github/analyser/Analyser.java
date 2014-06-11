@@ -5,12 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.client.GitHubClient;
+import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -26,6 +26,8 @@ public class Analyser {
 	
 	private File linksFile;
 	private GitHubClient client;
+	private List<String> repos;
+	private List<String> e4xmiLinks;
 	
 	public Analyser(String linksFilePath, String gitUser, String gitPassword)
 		throws FileNotFoundException{
@@ -44,44 +46,55 @@ public class Analyser {
 	
 	public void populateApplicationModelReferenceXMI() throws IOException{
 		List<ApplicationModelReference> amrList =
-			AMRPersistencyManager.getEvaluations().getAppModelReferences();
-		Map<String, String> gitLinkMap = readLinksFromFile();
+			AMRPersistencyManager.getEvaluations(
+				"C:/Users/Lucia/git/evaluation/at.ecrit.github.evaluation/model/evaluation.xmi")
+				.getAppModelReferences();
+		initRepoAndE4XMILists();
 		
-		for (String repo : gitLinkMap.keySet()) {
-			String tmp = repo.replace(GIT_BASE + "/", "");
-			String[] ownerName = tmp.split("/");
-			RepositoryService service = new RepositoryService(client);
-			Repository r = service.getRepository(ownerName[0], ownerName[1]);
-			System.out.println("RepoName: " + r.getName() + "\n" + r.getDescription());
-			
-			ApplicationModelReference amr =
-				EvaluationFactory.eINSTANCE.createApplicationModelReference();
-			amr.setDescription(r.getDescription());
-			
-			Document doc = Jsoup.connect(repo).get();
-			Elements links = doc.select("a[href]");
-			for (Element link : links) {
-				if (link.text().endsWith("README.md")) {
-					String readmeUrl = GIT_BASE + link.attr("href");
-					amr.setReadmeUrl(readmeUrl.replace("blob", "raw"));
+		int counter = 0;
+		for (int i = 0; i < repos.size(); i++) {
+			try {
+				String repo = repos.get(i);
+				
+				String tmp = repo.replace(GIT_BASE + "/", "");
+				String[] ownerName = tmp.split("/");
+				RepositoryService service = new RepositoryService(client);
+				Repository r = service.getRepository(ownerName[0], ownerName[1]);
+				System.out.println("RepoName: " + r.getName() + "\n" + r.getDescription());
+				
+				ApplicationModelReference amr =
+					EvaluationFactory.eINSTANCE.createApplicationModelReference();
+				amr.setDescription(r.getDescription());
+				
+				Document doc = Jsoup.connect(repo).get();
+				Elements links = doc.select("a[href]");
+				for (Element link : links) {
+					if (link.text().endsWith("README.md")) {
+						amr.setReadmeUrl(GIT_BASE + link.attr("href"));
+						continue;
+					}
+				}
+				
+				String appModelUrl = e4xmiLinks.get(i);
+				if (alreadyAdded(appModelUrl, amrList)) {
 					continue;
 				}
+				amr.setUrl(appModelUrl);
+				amr.setRawUrl(appModelUrl.replace("blob", "raw"));
+				amr.setGitBaseLocation(ownerName[0]);
+				amr.setGitRepository(ownerName[1]);
+				amr.setContext(EvaluationFactory.eINSTANCE.createContextInfo());
+				
+				amrList.add(amr);
+				AMRPersistencyManager.save();
+				System.out.println("Done " + amrList.size() + "\n");
+			} catch (RequestException re) {
+				counter++;
+				re.printStackTrace();
 			}
-			
-			String appModelUrl = gitLinkMap.get(repo);
-			if (alreadyAdded(appModelUrl, amrList)) {
-				continue;
-			}
-			amr.setUrl(appModelUrl);
-			amr.setRawUrl(appModelUrl.replace("blob", "raw"));
-			amr.setGitBaseLocation(ownerName[0]);
-			amr.setGitRepository(ownerName[1]);
-			amr.setContext(EvaluationFactory.eINSTANCE.createContextInfo());
-			
-			amrList.add(amr);
-			AMRPersistencyManager.save();
-			System.out.println("Done " + amrList.size() + "\n");
 		}
+		System.out.println("Skipped: " + counter);
+		System.out.println("Finished");
 	}
 	
 	private boolean alreadyAdded(String appModelUrl, List<ApplicationModelReference> amrList){
@@ -93,22 +106,26 @@ public class Analyser {
 		return false;
 	}
 	
-	private Map<String, String> readLinksFromFile(){
-		// key = repo, value = e4xmi
-		Map<String, String> gitMap = new HashMap<String, String>();
+	private void initRepoAndE4XMILists(){
+		repos = new ArrayList<String>();
+		e4xmiLinks = new ArrayList<String>();
+		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(linksFile));
 			
 			String line;
+			int counter = 0;
 			while ((line = br.readLine()) != null) {
 				String[] splitted = line.split(";");
-				gitMap.put(splitted[0], splitted[1]);
+				repos.add(counter, splitted[0]);
+				e4xmiLinks.add(counter, splitted[1]);
+				
+				System.out.println(counter++);
 			}
 			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return gitMap;
 	}
 	
 }
