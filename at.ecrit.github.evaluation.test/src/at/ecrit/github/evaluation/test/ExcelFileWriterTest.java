@@ -1,5 +1,7 @@
 package at.ecrit.github.evaluation.test;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -16,17 +18,20 @@ public class ExcelFileWriterTest {
 	
 	@Before
 	public void initBasicLists(){
-		amrList = AMRPersistencyManager.getEvaluations().getAppModelReferences();
+		File xmiFile = new File("rsc/evaluation.xmi");
+		amrList =
+			AMRPersistencyManager.getEvaluations(xmiFile.getAbsolutePath()).getAppModelReferences();
 	}
 	
 	@Test
 	public void writeTest() throws IOException{
 		ExcelFileWriter test = new ExcelFileWriter();
-		File f = new File("C:/Users/lucia/Desktop/AppModelTests/content.xls");
+		File f = new File("rsc/toc.xls");
 		test.write(amrList, f);
 		
-		System.out
-			.println("Please check the result file under C:/Users/lucia/Desktop/AppModelTests/content.xls");
+		assertTrue(f.length() > 0);
+		
+		System.out.println("Please check the result file under " + f.getAbsolutePath());
 	}
 	
 }
