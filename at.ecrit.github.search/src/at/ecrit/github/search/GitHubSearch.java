@@ -11,7 +11,7 @@ import at.ecrit.github.evaluation.GitHubConnector;
 
 public class GitHubSearch {
 	private static String GIT_URL =
-		"https://github.com/search?p=1&q=in%3Apath+*.e4xmi+extension%3Ae4xmi&type=Code&ref=searchresults";
+		"https://github.com/search?o=desc&p=1&q=in%3Apath+*.e4xmi+extension%3Ae4xmi&type=Code&ref=searchresults&s=indexed";
 	private static int START_PAGE = 1;
 	private static int END_PAGE = 70;
 	
