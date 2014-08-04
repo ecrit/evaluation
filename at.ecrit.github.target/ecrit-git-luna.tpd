@@ -1,0 +1,29 @@
+target "Luna SDK"
+
+with source, allEnvironments
+
+// Eclipse plugins dependencies
+location "http://download.eclipse.org/releases/luna" {
+	org.eclipse.sdk.ide
+	org.eclipse.rcp.sdk.id
+	org.eclipse.jdt.feature.group
+	org.eclipse.emf.sdk.feature.group
+	org.eclipse.emf.transaction.sdk.feature.group
+	org.eclipse.emf.validation.sdk.feature.group
+	org.eclipse.emf.compare.feature.group
+	org.eclipse.emf.compare.ide.ui.feature.group
+	org.eclipse.emf.cdo.sdk.feature.group
+	org.eclipse.emf.ecore.xcore.sdk.feature.group
+	org.eclipse.xtext.sdk.feature.group
+}
+
+// Orbit dependencies
+location "http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/" {	
+	org.jsoup
+	org.junit
+	org.apache.poi
+	org.apache.commons.io
+	org.apache.commons.httpclient
+	com.google.guava
+	com.google.gson
+}
