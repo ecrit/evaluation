@@ -17,38 +17,34 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import at.ecrit.evaluation.ApplicationModelReference;
-import at.ecrit.evaluation.EvaluationFactory;
-import at.ecrit.github.evaluation.persistency.AMRPersistencyManager;
+import at.ecrit.github.core.AMRPersistencyManager;
+import at.ecrit.github.core.model.ApplicationModelReference;
+import at.ecrit.github.core.model.ModelFactory;
 
-public class Analyser {
+public class LinksImporter {
 	private static final String GIT_BASE = "https://github.com";
 	
 	private File linksFile;
+	private File xmiFile;
 	private GitHubClient client;
 	private List<String> repos;
 	private List<String> e4xmiLinks;
 	
-	public Analyser(String linksFilePath, String gitUser, String gitPassword)
-		throws FileNotFoundException{
-		new Analyser(new File(linksFilePath), gitPassword, gitPassword);
+	public LinksImporter(String linksFilePath, String xmiFilePath, String gitUser,
+		String gitPassword) throws FileNotFoundException{
+		new LinksImporter(new File(linksFilePath), new File(xmiFilePath), gitPassword, gitPassword);
 	}
 	
-	public Analyser(File linksFile, String gitUser, String gitPassword)
-		throws FileNotFoundException{
+	public LinksImporter(File linksFile, File xmiFile, String gitUser, String gitPassword){
 		this.linksFile = linksFile;
-		if (!linksFile.exists()) {
-			throw new FileNotFoundException("File not found under: " + linksFile.getPath());
-		}
+		this.xmiFile = xmiFile;
 		client = new GitHubClient();
 		client.setCredentials(gitUser, gitPassword);
 	}
 	
 	public void populateApplicationModelReferenceXMI() throws IOException{
 		List<ApplicationModelReference> amrList =
-			AMRPersistencyManager.getEvaluations(
-				"C:/Users/Lucia/git/evaluation/at.ecrit.github.evaluation/model/evaluation.xmi")
-				.getAppModelReferences();
+			AMRPersistencyManager.getEvaluations(xmiFile.getAbsolutePath()).getAppModelReferences();
 		initRepoAndE4XMILists();
 		
 		int counter = 0;
@@ -63,7 +59,7 @@ public class Analyser {
 				System.out.println("RepoName: " + r.getName() + "\n" + r.getDescription());
 				
 				ApplicationModelReference amr =
-					EvaluationFactory.eINSTANCE.createApplicationModelReference();
+					ModelFactory.eINSTANCE.createApplicationModelReference();
 				amr.setDescription(r.getDescription());
 				
 				Document doc = Jsoup.connect(repo).get();
@@ -83,7 +79,7 @@ public class Analyser {
 				amr.setRawUrl(appModelUrl.replace("blob", "raw"));
 				amr.setGitBaseLocation(ownerName[0]);
 				amr.setGitRepository(ownerName[1]);
-				amr.setContext(EvaluationFactory.eINSTANCE.createContextInfo());
+				amr.setContext(ModelFactory.eINSTANCE.createContextInfo());
 				
 				amrList.add(amr);
 				AMRPersistencyManager.save();
@@ -94,9 +90,16 @@ public class Analyser {
 			}
 		}
 		System.out.println("Skipped: " + counter);
-		System.out.println("Finished");
+		System.out.println("Finished importing links");
 	}
 	
+	/**
+	 * checks whether this url is already part of the list
+	 * 
+	 * @param appModelUrl
+	 * @param amrList
+	 * @return
+	 */
 	private boolean alreadyAdded(String appModelUrl, List<ApplicationModelReference> amrList){
 		for (ApplicationModelReference amr : amrList) {
 			if (amr.getUrl().equals(amrList)) {
