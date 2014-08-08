@@ -15,7 +15,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import at.ecrit.github.evaluation.GitHubConnector;
+import at.ecrit.github.core.GitHubConnector;
 
 public class GitHubResultCollector {
 	private static final String GIT_BASE = "https://github.com";
@@ -50,7 +50,7 @@ public class GitHubResultCollector {
 				int endIdx = page.indexOf("&", startIdx);
 				int nextStart = Integer.parseInt(page.substring(startIdx, endIdx));
 				
-				e.printStackTrace();
+				System.out.println("... waiting to continue - will be... ");
 				return nextStart;
 			}
 		}
