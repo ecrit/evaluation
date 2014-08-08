@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GitHub Tool
+Bundle-SymbolicName: at.ecrit.github
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: ecrit.at
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.jsoup;bundle-version="1.7.2",
+ at.ecrit.github.search,
+ at.ecrit.github.analyser,
+ at.ecrit.github.core
+Bundle-ClassPath: .

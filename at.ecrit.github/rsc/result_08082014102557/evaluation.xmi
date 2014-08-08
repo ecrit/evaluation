@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="ASCII"?>
+<model:Evaluation xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:model="at.ecrit.github.core.model" xsi:schemaLocation="at.ecrit.github.core.model Evaluation.xcore#/EPackage"/>
