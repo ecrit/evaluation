@@ -1,8 +1,6 @@
 Evaluation
 ==========
 
-Ecrit project evaluation repository
-
 The projects in this repository help you evaluating GitHub search results for e4xmi-files.
 All results of your search request will be stored in a nice human readable xls sheet. Including some e4xmi-file content information (size of the file, is it a fragment, how many commands, menus,...).
 
